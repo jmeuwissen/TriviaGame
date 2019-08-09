@@ -4,10 +4,8 @@ answerQuestion(){
 
 }
 
-function triviaQuestion(answers, question, ) {
-
-}
-const jsonTriviaQuestions = []; 
+const jsonTriviaQuestions = null; 
+let questionNumber = 0;
 //grabbing a bunch of trivia questions
 fetch(
     "https://opentdb.com/api.php?amount=15&type=multiple"
@@ -18,6 +16,7 @@ fetch(
 });
 
 function displayQuestion(){
+    document.getElementById("question").textContent = jsonTriviaQuestions.results[questionNumber].question;
 
 }
 
@@ -25,8 +24,45 @@ function nextQuestionTimeout(){
     transitionTimeout = setTimeout(nextQuestion, 3000);
 }
 
+function nextQuestion(){
+    questionNumber++;
+}
+
 function assignAnswers(){
     
+    //putting all answers into an array from the json
+    const answers = jsonTriviaQuestions.results[questionNumber].incorrect_answers;
+    answers.push(jsonTriviaQuestions.results[questionNumber].correct_answer);
+    
+    //stack exchange says this shuffles an array
+    answers.sort(() => Math.random() - 0.5);
+    answers.forEach(answer => {
+        choicesEl = document.getElementById("choices");
+        choiceEl = document.createElement("p");
+        choiceEl.textContent = answer;
+
+        //if the element is the correct answer, this gives the element an event listener with function handling a correct answer
+        if(answer === jsonTriviaQuestions.results[questionNumber].correct_answer ){
+            choiceEl.addEventListener("click", answerCorrectly)
+        }
+        //otherwise the element is given a listener with function handling incorrect answer
+        else{
+            choiceEl.addEventListener("click", answerIncorrectly)
+        }
+    });
+    
+}
+
+function resetGame(){
+    questionNumber = 0;
+    fetch(
+        "https://opentdb.com/api.php?amount=15&type=multiple"
+    ).then(function (response) {
+        return response.json();
+    }).then(function (responseJson) {
+        jsonTriviaQuestions = responseJson;
+    });
+
 }
 
 //start the main screen
