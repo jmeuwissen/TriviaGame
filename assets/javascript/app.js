@@ -4,8 +4,10 @@ answerQuestion(){
 
 }
 
-const jsonTriviaQuestions = null; 
+let jsonTriviaQuestions = null; 
 let questionNumber = 0;
+let transitionTimeout = null;
+let tickingAnswerTimeout = null;
 //grabbing a bunch of trivia questions
 fetch(
     "https://opentdb.com/api.php?amount=15&type=multiple"
@@ -17,7 +19,9 @@ fetch(
 
 function displayQuestion(){
     document.getElementById("question").textContent = jsonTriviaQuestions.results[questionNumber].question;
-
+    assignAnswers();
+    tickingAnswerTimeout = setTimeout(answerIncorrectly, 10000);
+    clearTimeout(transitionTimeout);
 }
 
 function nextQuestionTimeout(){
@@ -25,7 +29,24 @@ function nextQuestionTimeout(){
 }
 
 function nextQuestion(){
+    document.getElementById("choices").innerHTML = "";
     questionNumber++;
+    displayQuestion();
+    assignAnswers();
+    document.getElementById("message").textContent = "";
+}
+
+function answerCorrectly(){
+    document.getElementById("message").textContent = "correct!"
+    clearTimeout(tickingAnswerTimeout);
+    nextQuestionTimeout();
+}
+
+function answerIncorrectly(){
+    document.getElementById("correct-answer").textContent += " Correct Answer";
+    document.getElementById("message").textContent = "Wrong Answer/You Took Too Long!"
+    clearTimeout(tickingAnswerTimeout);
+    nextQuestionTimeout();
 }
 
 function assignAnswers(){
@@ -43,12 +64,14 @@ function assignAnswers(){
 
         //if the element is the correct answer, this gives the element an event listener with function handling a correct answer
         if(answer === jsonTriviaQuestions.results[questionNumber].correct_answer ){
-            choiceEl.addEventListener("click", answerCorrectly)
+            choiceEl.addEventListener("click", answerCorrectly);
+            choiceEl.setAttribute("id", "correct-answer");
         }
         //otherwise the element is given a listener with function handling incorrect answer
         else{
-            choiceEl.addEventListener("click", answerIncorrectly)
+            choiceEl.addEventListener("click", answerIncorrectly);
         }
+        choicesEl.append(choiceEl);
     });
     
 }
