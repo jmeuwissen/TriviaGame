@@ -1,9 +1,4 @@
 
-//handler for events triggered by clicking on the question option
-answerQuestion(){
-
-}
-
 let jsonTriviaQuestions = null; 
 let questionNumber = 0;
 let transitionTimeout = null;
@@ -14,11 +9,13 @@ fetch(
 ).then(function (response) {
     return response.json();
 }).then(function (responseJson) {
+    console.log("fetched");
     jsonTriviaQuestions = responseJson;
+    displayQuestion();
 });
 
 function displayQuestion(){
-    document.getElementById("question").textContent = jsonTriviaQuestions.results[questionNumber].question;
+    document.getElementById("question").innerHTML = jsonTriviaQuestions.results[questionNumber].question;
     assignAnswers();
     tickingAnswerTimeout = setTimeout(answerIncorrectly, 10000);
     clearTimeout(transitionTimeout);
@@ -28,21 +25,37 @@ function nextQuestionTimeout(){
     transitionTimeout = setTimeout(nextQuestion, 3000);
 }
 
+function endGame(){
+    //display end-game stats
+    document.getElementById("question").innerHTML = "";
+    numberCorrectEl = document.createElement("p");
+    numberIncorrectEl = document.createElement("p");
+    numberCorrectEl.textContent = "Correct: " + correctCount;
+    numberIncorrectEl.textContent = "Incorrect: " + incorrectCount;
+
+
+}
+
 function nextQuestion(){
+    
     document.getElementById("choices").innerHTML = "";
-    questionNumber++;
-    displayQuestion();
-    assignAnswers();
+    questionNumber++;   
     document.getElementById("message").textContent = "";
+    if(questionNumber === jsonTriviaQuestions.results.length){
+        endGame();
+    }
+    displayQuestion();
 }
 
 function answerCorrectly(){
+    correctCount++;
     document.getElementById("message").textContent = "correct!"
     clearTimeout(tickingAnswerTimeout);
     nextQuestionTimeout();
 }
 
 function answerIncorrectly(){
+    incorrectCount++;
     document.getElementById("correct-answer").textContent += " Correct Answer";
     document.getElementById("message").textContent = "Wrong Answer/You Took Too Long!"
     clearTimeout(tickingAnswerTimeout);
@@ -60,7 +73,7 @@ function assignAnswers(){
     answers.forEach(answer => {
         choicesEl = document.getElementById("choices");
         choiceEl = document.createElement("p");
-        choiceEl.textContent = answer;
+        choiceEl.innerHTML = answer;
 
         //if the element is the correct answer, this gives the element an event listener with function handling a correct answer
         if(answer === jsonTriviaQuestions.results[questionNumber].correct_answer ){
