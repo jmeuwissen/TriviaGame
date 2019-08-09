@@ -3,6 +3,8 @@ let jsonTriviaQuestions = null;
 let questionNumber = 0;
 let transitionTimeout = null;
 let tickingAnswerTimeout = null;
+let correctCount = 0;
+let incorrectCount = 0;
 //grabbing a bunch of trivia questions
 fetch(
     "https://opentdb.com/api.php?amount=15&type=multiple"
@@ -14,6 +16,7 @@ fetch(
     displayQuestion();
 });
 
+//displays the next question and/or starts the game
 function displayQuestion(){
     document.getElementById("question").innerHTML = jsonTriviaQuestions.results[questionNumber].question;
     assignAnswers();
@@ -30,8 +33,20 @@ function endGame(){
     document.getElementById("question").innerHTML = "";
     numberCorrectEl = document.createElement("p");
     numberIncorrectEl = document.createElement("p");
+    resetButtonEl = document.createElement("button");
+
+
     numberCorrectEl.textContent = "Correct: " + correctCount;
     numberIncorrectEl.textContent = "Incorrect: " + incorrectCount;
+
+    resetButtonEl.textContent = "Play Again!";
+    resetButtonEl.addEventListener("click", resetGame);
+
+
+    const displayEl = document.getElementById("display");
+
+    displayEl.append(numberCorrectEl,numberIncorrectEl,resetButtonEl);
+
 
 
 }
@@ -44,7 +59,9 @@ function nextQuestion(){
     if(questionNumber === jsonTriviaQuestions.results.length){
         endGame();
     }
-    displayQuestion();
+    else{
+        displayQuestion();
+    }
 }
 
 function answerCorrectly(){
@@ -72,7 +89,7 @@ function assignAnswers(){
     answers.sort(() => Math.random() - 0.5);
     answers.forEach(answer => {
         choicesEl = document.getElementById("choices");
-        choiceEl = document.createElement("p");
+        const choiceEl = document.createElement("p");
         choiceEl.innerHTML = answer;
 
         //if the element is the correct answer, this gives the element an event listener with function handling a correct answer
@@ -91,12 +108,20 @@ function assignAnswers(){
 
 function resetGame(){
     questionNumber = 0;
+        
+    correctCount = 0;
+    incorrectCount = 0;
+
+    numberCorrectEl.textContent = "";
+    numberIncorrectEl.textContent = "";
+
     fetch(
         "https://opentdb.com/api.php?amount=15&type=multiple"
     ).then(function (response) {
         return response.json();
     }).then(function (responseJson) {
         jsonTriviaQuestions = responseJson;
+        displayQuestion();
     });
 
 }
